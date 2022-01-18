@@ -1,1 +1,1 @@
-# Comparitive_Hybrid_Approach_Replication
+follow instructions in instructions.txt
