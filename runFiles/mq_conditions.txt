@@ -1,0 +1,139 @@
+
+
+# Lines starting with # are ignored
+# Lists must not contain white space (i.e. "1,2,3" OK, "1, 2, 3" Not OK)
+
+# REPS = [FIRST REP] [LAST REP] - which reps to run / random seeds
+REPS = 101 101
+
+# Settings to override the config files, but will not be varied per condition
+
+# Global Constants
+CONSTANT = GLOBAL-updates 100000
+CONSTANT = ARCHIVIST-outputMethod LODwAP
+CONSTANT = ARCHIVIST_LODWAP-dataSequence :1000
+CONSTANT = ARCHIVIST_LODWAP-organismsSequence :1000
+CONSTANT = ARCHIVIST_LODWAP-terminateAfter 10
+CONSTANT = ARCHIVIST_DEFAULT-realtimeSequence :1000
+
+
+# BlockyCatch Constants
+CONSTANT = WORLD_BLOCKCATCH-patternsToCatch 1R,11L,11R,101L
+CONSTANT = WORLD_BLOCKCATCH-patternsToMiss 1L,1111L,1111R,101R
+
+
+# NBack Constants
+# all default
+CONSTANT = WORLD_NBACK-NsList "1,2,4,7,8:-1"
+CONSTANT = WORLD_NBACK-evaluationsPerGeneration 10
+CONSTANT = WORLD_NBACK-testsPerEvaluation 10
+
+
+# PathFollow Constants
+CONSTANT = WORLD_PATHFOLLOW-addFlippedMaps 1
+CONSTANT = WORLD_PATHFOLLOW-clearVisted 1
+CONSTANT = WORLD_PATHFOLLOW-emptySpaceCost .25
+CONSTANT = WORLD_PATHFOLLOW-extraSteps 50
+CONSTANT = WORLD_PATHFOLLOW-mapNames path1.txt,path2.txt,path3.txt,path4.txt
+CONSTANT = WORLD_PATHFOLLOW-randomTurnSymbols -1
+CONSTANT = WORLD_PATHFOLLOW-turnSymbolsCount 3
+CONSTANT = WORLD_PATHFOLLOW-inputMode binary
+
+
+# CGP Brain Constants
+CONSTANT = BRAIN_CGP-nrRecurrentNodes 8
+CONSTANT = BRAIN_CGP-opsMatixColumns 4
+CONSTANT = BRAIN_CGP-opsMatixRows 4
+CONSTANT = BRAIN_CGP-readFromOutputs 0
+CONSTANT = BRAIN_CGP-magnitudeMax 2.0
+CONSTANT = BRAIN_CGP-magnitudeMin -2.0
+CONSTANT = BRAIN_CGP-RNN_biasMaxValue 1.0
+CONSTANT = BRAIN_CGP-RNN_biasMinValue -1.0
+CONSTANT = BRAIN_CGP-MutationRate_CONST_value 0.005
+CONSTANT = BRAIN_CGP-MutationRate_DETGATE_logic 0.01
+CONSTANT = BRAIN_CGP-MutationRate_INPUTS 0.01
+CONSTANT = BRAIN_CGP-MutationRate_OPERATION 0.0025
+CONSTANT = BRAIN_CGP-MutationRate_OUTPUT 0.0025
+CONSTANT = BRAIN_CGP-MutationRate_RNN_bias 0.01
+CONSTANT = BRAIN_CGP-MutationRate_RNN_weights 0.01
+
+
+# Markov Brain Constants
+CONSTANT = BRAIN_MARKOV-hiddenNodes 8
+CONSTANT = BRAIN_MARKOV_GATES_ANN-Input_Range 1-8
+CONSTANT = BRAIN_MARKOV_GATES_ANN-initialCount 32
+CONSTANT = BRAIN_MARKOV_GATES_CARTESIANGENETICPROGRAMING-initialCount 32
+CONSTANT = BRAIN_MARKOV_GATES_CARTESIANGENETICPROGRAMING-availableOperators ADD,MULT,SUBTRACT,DIVIDE,IF,INV,CONST
+CONSTANT = BRAIN_MARKOV_GATES_CARTESIANGENETICPROGRAMING-magnitudeMax 2.0
+CONSTANT = BRAIN_MARKOV_GATES_CARTESIANGENETICPROGRAMING-magnitudeMin -2.0
+
+
+# RNN Brain Constants
+CONSTANT = BRAIN_RNN-nrOfRecurringNodes 8
+
+
+# VAR = [SHORT NAME]    [REAL NAME]     [conditon1,condition2,etc.]
+# Short name is used in CONDITIONS (below), and also determines output directory names
+VAR = BRN       BRAIN-brainType
+# i.e., RNN, MARKOV, CGP
+
+VAR = WLD       WORLD-worldType
+# i.e., NBACK, BlockCatch, Pathfollow
+
+VAR = COP       BRAIN_CGP-availableOperators
+# controls which ops are avalible, the default set vs RNN vs DETGATE (i.e. markov)
+
+VAR = MCA       BRAIN_MARKOV_GATES_CARTESIANGENETICPROGRAMING-allow
+VAR = MDA       BRAIN_MARKOV_GATES_DETERMINISTIC-allow
+VAR = MAA       BRAIN_MARKOV_GATES_ANN-allow
+# M*A are switches that turn on and off different gate types for markov brains
+
+VAR = RWR       BRAIN_RNN-weightRangeMapping
+# running with 0,1,0,1,0 = defaut, 0,1,4,1,0 = sparse
+
+VAR = CDR       BRAIN_CGP-discretizeRecurrent
+VAR = MDR	BRAIN_MARKOV-discretizeRecurrent
+VAR = RDR       BRAIN_RNN-discretizeRecurrent
+# switches for discete vs continous memory per brain type
+
+# Conditions
+
+#    CGP
+CONDITIONS = WLD=BlockCatch,PathFollow,NBack BRN=CGP CDR=-1,1 COP="ADD,MULT,SUBTRACT,DIVIDE,IF,INV,CONST","RNN"
+CONDITIONS = WLD=BlockCatch,PathFollow,NBack BRN=CGP CDR=-1 COP="DETGATE"
+
+#    Markov
+CONDITIONS = WLD=BlockCatch,PathFollow,NBack BRN=Markov MDA=0 MCA=1 MDR=-1,1
+CONDITIONS = WLD=BlockCatch,PathFollow,NBack BRN=Markov MDA=1
+CONDITIONS = WLD=BlockCatch,PathFollow,NBack BRN=Markov MDA=0 MAA=1 MDR=-1,1
+
+#    RNNs
+CONDITIONS = WLD=BlockCatch,PathFollow,NBack BRN=RNN RWR="0,1,0,1,0","0,1,4,1,0" RDR=-1,1
+
+
+# list of setting files (.cfg) which you want MABE to load with the -f option. files will be loaded in the order provided.
+SETTINGS = settings.cfg,settings_organism.cfg,settings_world.cfg
+
+# list of files used by MABE (i.e. maps, images, etc.) and you can use rep replacement {{rep}} syntax
+# these files will be copied to the working directory if necessary
+OTHERFILES = path1.txt,path2.txt,path3.txt,path4.txt
+
+-----
+
+# JOBNAME will be appended before condition (C*) identifier - if "NONE" then job will have not JOBNAME
+JOBNAME = NONE
+
+# EXECUTABLE is the name of program to run, may include a path
+EXECUTABLE = ./mabe
+
+-----
+# comma separate the mail type list ex: FAIL,END,REQUEUE
+
+# HPCC (not used for indefinite mode)
+HPCC_PARAMETERS = #SBATCH --constraint="[intel14|intel16|intel18]"
+HPCC_PARAMETERS = #SBATCH --ntasks=1
+HPCC_PARAMETERS = #SBATCH --cpus-per-task=1
+HPCC_PARAMETERS = #SBATCH --time=40:55:00  #WARNING indefinite requires 03:51:00 or greater
+HPCC_PARAMETERS = #SBATCH --mem=2G
+HPCC_PARAMETERS = #SBATCH --mail-type=FAIL
+
